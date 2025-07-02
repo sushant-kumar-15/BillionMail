@@ -105,16 +105,22 @@ type MailTracker struct {
 }
 
 func NewMailTracker(mailHTML string, campaignID int, messageID, recipient, baseURL string) *MailTracker {
-	return &MailTracker{
-		originalMailHTML: mailHTML,
-		modified:         false,
-		mailHTML:         mailHTML,
-		campaignID:       campaignID,
-		messageID:        strings.Trim(messageID, "<>"),
-		recipient:        recipient,
-		baseURL:          fmt.Sprintf("%s/pmta", strings.TrimRight(baseURL, "/")),
-		hrefPattern:      regexp.MustCompile(`href\s*=\s*"([^"]+)"`),
-	}
+    // Parse the baseURL and remove the port if present
+    parsed, err := url.Parse(baseURL)
+    if err == nil {
+        parsed.Host = parsed.Hostname() // removes port
+        baseURL = parsed.String()
+    }
+    return &MailTracker{
+        originalMailHTML: mailHTML,
+        modified:         false,
+        mailHTML:         mailHTML,
+        campaignID:       campaignID,
+        messageID:        strings.Trim(messageID, "<>"),
+        recipient:        recipient,
+        baseURL:          fmt.Sprintf("%s/pmta", strings.TrimRight(baseURL, "/")),
+        hrefPattern:      regexp.MustCompile(`href\s*=\s*"([^"]+)"`),
+    }
 }
 
 // TrackLinks handles the tracking of links in the email HTML
