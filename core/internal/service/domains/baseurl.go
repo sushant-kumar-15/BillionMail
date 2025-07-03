@@ -96,7 +96,7 @@ func buildBaseURL(hostname string) (s string) {
 
 	withPort := true
 
-	if serverPort == -1 || serverPort == 80 || serverPort == 443 {
+	if serverPort == -1 || serverPort == 80 || serverPort == 443 || serverPort == 8443 {
 		withPort = false
 	}
 
