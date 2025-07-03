@@ -7,6 +7,7 @@ import (
 	"context"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/util/gconv"
+	"net/url"
 	"sync"
 )
 
@@ -18,6 +19,13 @@ var (
 
 // GetBaseURL get baseurl of console panel
 func GetBaseURL() string {
+	if baseurl == "" {
+		return baseurl
+	}
+	if u, err := url.Parse(baseurl); err == nil {
+		u.Host = u.Hostname()
+		return u.String()
+	}
 	return baseurl
 }
 
@@ -34,6 +42,10 @@ func GetBaseURLBySender(sender string) string {
 	s, ok := baseurlMap[sender]
 	baseurlMapMu.RUnlock()
 	if ok {
+		if u, err := url.Parse(s); err == nil {
+			u.Host = u.Hostname()
+			return u.String()
+		}
 		return s
 	}
 
@@ -94,11 +106,8 @@ func buildBaseURL(hostname string) (s string) {
 		serverPort = g.Server(consts.DEFAULT_SERVER_NAME).GetListenedPort()
 	}
 
-	withPort := true
-
-	if serverPort == -1 || serverPort == 80 || serverPort == 443 {
-		withPort = false
-	}
+	// Do not expose the server port in generated URLs
+	withPort := false
 
 	serverIP, localIP, err := public.GetServerIPAndLocalIP()
 
@@ -113,6 +122,10 @@ func buildBaseURL(hostname string) (s string) {
 			s = scheme + "://" + localIP
 			if withPort {
 				s += ":" + gconv.String(serverPort)
+			}
+			if u, err := url.Parse(s); err == nil {
+				u.Host = u.Hostname()
+				s = u.String()
 			}
 			return
 		}
@@ -137,6 +150,10 @@ func buildBaseURL(hostname string) (s string) {
 			if withPort {
 				s += ":" + gconv.String(serverPort)
 			}
+			if u, err := url.Parse(s); err == nil {
+				u.Host = u.Hostname()
+				s = u.String()
+			}
 			return
 		}
 	}
@@ -144,6 +161,11 @@ func buildBaseURL(hostname string) (s string) {
 	s = scheme + "://" + serverIP
 	if withPort {
 		s += ":" + gconv.String(serverPort)
+	}
+
+	if u, err := url.Parse(s); err == nil {
+		u.Host = u.Hostname()
+		s = u.String()
 	}
 
 	return
